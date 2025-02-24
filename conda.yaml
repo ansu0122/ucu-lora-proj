@@ -1,0 +1,28 @@
+name: python3.10-la-proj
+channels:
+  - defaults
+dependencies:
+  - python=3.10.14
+  - pip
+  - pip:
+    - ipykernel
+    - numpy==1.26.4
+    - matplotlib
+    - pillow
+    - torch==2.6.0
+    - torchvision
+    - tqdm
+    - datasets
+    - transformers
+    - faiss-gpu==1.7.2
+    - fiftyone
+    - regex
+    - ftfy
+    - git+https://github.com/openai/CLIP.git
+    - loraclip
+    - wandb
+    - huggingface_hub 
+    - python-dotenv
+
+
+    

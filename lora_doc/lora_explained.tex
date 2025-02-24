@@ -1,0 +1,79 @@
+\documentclass{article}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{enumitem}
+
+\begin{document}
+
+\title{AutoLoRA with SVD: Adaptive Rank Selection for Efficient LoRA Fine-Tuning}
+\author{}
+\date{}
+\maketitle
+
+\section{Introduction}
+AutoLoRA with Singular Value Decomposition (SVD) is an approach that dynamically determines the optimal rank for LoRA layers based on the singular value spectrum of the model's weight matrices. The goal is to adaptively allocate LoRA rank, ensuring efficient adaptation while maintaining computational efficiency.
+
+\section{Key Idea Behind AutoLoRA with SVD}
+Instead of setting a fixed rank for all layers in LoRA, this method:
+\begin{itemize}
+    \item Uses SVD on weight updates to determine the most informative singular values.
+    \item Adapts the LoRA rank per layer based on the decay of singular values.
+    \item Prunes unimportant components dynamically during training.
+\end{itemize}
+
+\section{How AutoLoRA with SVD Works}
+\subsection{Compute SVD on Weight Updates}
+For a given weight matrix $W$, LoRA introduces a low-rank decomposition:
+\begin{equation}
+    W' = W + \Delta W
+\end{equation}
+where $\Delta W = AB$ (with $A$ and $B$ being low-rank matrices).
+
+To find the optimal rank $r$:
+\begin{enumerate}
+    \item Compute SVD of the weight update matrix:
+    \begin{equation}
+        \Delta W = U \Sigma V^T
+    \end{equation}
+    where:
+    \begin{itemize}
+        \item $U$ and $V$ are orthonormal matrices.
+        \item $\Sigma$ is a diagonal matrix containing singular values.
+    \end{itemize}
+    \item Analyze the singular value decay:
+    \begin{itemize}
+        \item Large singular values contribute more to model adaptation.
+        \item Small singular values can be pruned without significant loss in expressivity.
+    \end{itemize}
+    \item Define an adaptive threshold:
+    
+    Rank selection can be based on energy retention, e.g.:
+    \begin{equation}
+        \sum_{i=1}^{r} \sigma_i^2 \geq \alpha \sum_{i=1}^{\text{all}} \sigma_i^2
+    \end{equation}
+    where $\alpha$ (e.g., 95\%) controls how much of the energy is preserved.
+    \item Select the minimum rank $r$ that satisfies the condition.
+\end{enumerate}
+
+\subsection{Apply Adaptive Rank LoRA}
+\begin{itemize}
+    \item Instead of setting a fixed $r$, each layer gets its own rank based on the SVD results.
+    \item The rank can be updated per iteration or at predefined intervals.
+\end{itemize}
+
+\subsection{Efficient Training with Rank Adaptation}
+\begin{itemize}
+    \item \textbf{Early Training:} LoRA starts with a higher initial rank.
+    \item \textbf{Dynamic Pruning:} As training progresses, SVD is periodically applied, and small singular values are removed, reducing rank dynamically.
+    \item \textbf{Final Adaptation:} The rank settles into an efficient lower-dimensional subspace that retains key adaptation capacity.
+\end{itemize}
+
+\section{Advantages of AutoLoRA with SVD}
+\begin{itemize}
+    \item \textbf{Adaptive Rank Selection} – Different layers get different ranks based on their importance.
+    \item \textbf{Efficient Computation} – Reduces memory and computation compared to fixed-rank LoRA.
+    \item \textbf{Better Generalization} – Avoids overfitting by pruning unnecessary components.
+    \item \textbf{Energy-Based Optimization} – Ensures high information retention with minimal redundancy.
+\end{itemize}
+
+\end{document}
